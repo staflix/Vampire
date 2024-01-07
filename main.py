@@ -8,7 +8,7 @@ class Game:
     def __init__(self):
         pygame.init()
         pygame.display.set_caption('Vampire')
-        self.screen = pygame.display.set_mode(SCREEN_SIZE)
+        self.screen = pygame.display.set_mode(SCREEN_SIZE, )
         self.level = Level()
         self.clock = pygame.time.Clock()
 
@@ -17,7 +17,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     disconnect()
-            self.screen.fill('black')
+            self.screen.fill("white")
             self.level.run()
             pygame.display.flip()
             self.clock.tick(FPS)

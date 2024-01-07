@@ -1,10 +1,11 @@
 import pygame
+from utils import TILE_SIZE
 
 
 class Tile(pygame.sprite.Sprite):
-    def __init__(self, pos, groups):
+    def __init__(self, pos, groups, sprite_type, surface=pygame.Surface((TILE_SIZE, TILE_SIZE))):
         super().__init__(groups)
-        original_image = pygame.image.load("rock.png").convert_alpha()
-        self.image = pygame.transform.scale(original_image, (32, 32))
+        self.sprite_type = sprite_type
+        self.image = surface
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(-10, -10)
