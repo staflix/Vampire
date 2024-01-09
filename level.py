@@ -1,18 +1,21 @@
 from tile import Tile
 from player import Player
 from utils import *
+from ui import UI
 import pygame
 
 
 class Level:
     def __init__(self):
-        # создание видимых и препятственных спрайтов
+        # создание видимых, препятственных, злых спрайтов
         self.visible_sprites = YSortCameraGroup()
         self.obstacles_sprites = pygame.sprite.Group()
+        self.negative_sprite = pygame.sprite.Group()
         # получение поверхности
         self.display_surface = pygame.display.get_surface()
         # отрисовка карты
         self.create_map()
+        # отрисовка пользовательского интерфейса
 
     def create_map(self):
         layouts = {
@@ -63,6 +66,8 @@ class YSortCameraGroup(pygame.sprite.Group):
         self.floor_surf = pygame.image.load("graphics/fon.png").convert()
         self.floor_rect = self.floor_surf.get_rect(topleft=(0, 0))
 
+        self.ui = UI(self.offset)
+
     def custom_draw(self, player):
         # getting the offset
         self.offset.x = player.rect.centerx - self.half_width
@@ -74,3 +79,5 @@ class YSortCameraGroup(pygame.sprite.Group):
         for sprite in sorted(self.sprites(), key=lambda x: x.rect.centery):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
+        self.ui.health_and_exp_bars(player)
+
