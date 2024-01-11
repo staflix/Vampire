@@ -1,8 +1,8 @@
 from PIL import Image
 
-image_path = 'graphics/lightning/thunder.png'
+image_path = 'graphics/monsters/tileset2.png'
 original_image = Image.open(image_path)
-chunk_size = 150
+chunk_size = 32
 width, height = original_image.size
 counter = 0
 for y in range(0, height, chunk_size):
@@ -18,6 +18,6 @@ for y in range(0, height, chunk_size):
             else:
                 new_data.append(item)
         cropped_image.putdata(new_data)
-        save_path = f'graphics/lightning/lightning.png'
+        save_path = f'graphics/monsters/spider/cropped_{counter}.png'
         cropped_image.save(save_path, format="PNG")
         counter += 1

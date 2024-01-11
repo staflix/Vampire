@@ -1,20 +1,21 @@
 from utils import *
+import time
 import pygame
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, groups, obstacles_sprites):
+    def __init__(self, pos, groups, obstacle_sprites, negative_sprites):
         super().__init__(groups)
         # player
-        original_image = pygame.image.load("graphics/player/306.png").convert_alpha()
-        self.image = pygame.transform.scale(original_image, (32, 32))
+        self.image = pygame.image.load("graphics/player/306.png").convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
         self.direction = pygame.math.Vector2(0, 0)
         self.hitbox = self.rect.inflate(-10, -10)
-        self.obstacles_sprites = obstacles_sprites
+        self.obstacle_sprites = obstacle_sprites
+        self.negative_sprites = negative_sprites
 
         # animations
-        self.animations = {"up": "304.png", "right": "305.png", "down": "306.png", "left": "307.png"}
+        self.animations = None
         self.type_walk = "down"
 
         # attacks
@@ -25,17 +26,28 @@ class Player(pygame.sprite.Sprite):
 
         # stats
         self.stats = {"hp": 100, "speed": 2, "exp_level": 1, "money": 0, "exp_to_level_up": 10}
-        self.health = self.stats["hp"] * 0.5
+        self.health = self.stats["hp"]
         self.speed = self.stats["speed"]
         self.exp_level = self.stats["exp_level"]
         self.money = self.stats["money"]
         self.exp_current_to_level_up = 8
 
-    def change_image_walk(self):
+        self.start_time = time.time()
+        self.elapsed_time = 0
+
+        self.load_images()
+
+    def load_images(self):
         path = "graphics/player"
-        animation = self.animations[self.type_walk]
-        full_path = path + "/" + animation
-        self.image = pygame.image.load(full_path).convert_alpha()
+        self.animations = {
+            "up": pygame.image.load(path + "/304.png").convert_alpha(),
+            "right": pygame.image.load(path + "/305.png").convert_alpha(),
+            "down": pygame.image.load(path + "/306.png").convert_alpha(),
+            "left": pygame.image.load(path + "/307.png").convert_alpha()
+        }
+
+    def change_image_walk(self):
+        self.image = self.animations[self.type_walk]
 
     def change_direction(self):
         # изменение направления вектора
@@ -73,19 +85,23 @@ class Player(pygame.sprite.Sprite):
 
     def collision(self, direction):
         if direction == "horizontal":
-            for sprite in self.obstacles_sprites:
+            for sprite in self.obstacle_sprites:
                 if sprite.hitbox.colliderect(self.hitbox):
                     if self.direction.x > 0:  # moving right
                         self.hitbox.right = sprite.hitbox.left
                     elif self.direction.x < 0:  # moving left
                         self.hitbox.left = sprite.hitbox.right
         elif direction == "vertical":
-            for sprite in self.obstacles_sprites:
+            for sprite in self.obstacle_sprites:
                 if sprite.hitbox.colliderect(self.hitbox):
                     if self.direction.y > 0:  # moving down
                         self.hitbox.bottom = sprite.hitbox.top
                     elif self.direction.y < 0:  # moving top
                         self.hitbox.top = sprite.hitbox.bottom
+
+        for sprite in self.negative_sprites:
+            if sprite.hitbox.colliderect(self.hitbox):
+                self.health -= 2
 
     def cooldown_thunder(self):
         current_time = pygame.time.get_ticks()

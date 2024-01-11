@@ -2,6 +2,9 @@ from tile import Tile
 from player import Player
 from utils import *
 from ui import UI
+from enemy import Enemy
+import random
+import time
 import pygame
 
 
@@ -10,48 +13,86 @@ class Level:
         # создание видимых, препятственных, злых спрайтов
         self.visible_sprites = YSortCameraGroup()
         self.obstacles_sprites = pygame.sprite.Group()
-        self.negative_sprite = pygame.sprite.Group()
+        self.negative_sprites = pygame.sprite.Group()
         # получение поверхности
         self.display_surface = pygame.display.get_surface()
-        # отрисовка карты
-        self.create_map()
-        # отрисовка пользовательского интерфейса
-
-    def create_map(self):
-        layouts = {
-            "ground": import_csv_file("graphics/csvfiles/pygame_ground.csv"),
-            "road": import_csv_file("graphics/csvfiles/pygame_road.csv"),
+        # объекты
+        self.layouts = {
             "obstacles": import_csv_file("graphics/csvfiles/pygame_obstacles.csv")
         }
-        pictures = {
-            "ground": import_folder("graphics/ground"),
-            "road": import_folder("graphics/road"),
+        self.pictures = {
             "obstacles": import_folder("graphics/obstacles"),
         }
+        # отрисовка карты
+        self.create_map()
+        # начало отсчета времени
+        self.start_time = time.time()
+        self.elapsed_time = 0
+        self.old_elapsed_time = -8
 
-        for style, layout in layouts.items():
+    def create_map(self):
+        for style, layout in self.layouts.items():
             for index_r, r in enumerate(layout):
                 for index_c, c in enumerate(r):
+                    x = index_c * TILE_SIZE
+                    y = index_r * TILE_SIZE
                     if c != "-1":
+                        if style == "obstacles":
+                            obj = self.pictures["obstacles"][str(c)]
+                            Tile((x, y), [self.visible_sprites, self.obstacles_sprites], obj)
+        self.player = Player((1500, 1600), [self.visible_sprites], self.obstacles_sprites, self.negative_sprites)
+
+    def update_monsters(self, count_monsters, type_monsters):
+        correct_position = []
+
+        for style, layout in self.layouts.items():
+            for index_r, r in enumerate(layout):
+                for index_c, c in enumerate(r):
+                    if c == "-1" and 19 < index_r < 80 and 19 < index_c < 80:
                         x = index_c * TILE_SIZE
                         y = index_r * TILE_SIZE
-                        if style == "obstacles":
-                            obj = pictures["obstacles"][str(c)]
-                            Tile((x, y), [self.visible_sprites, self.obstacles_sprites], "obstacles", obj)
+                        correct_position.append((x, y))
 
-        self.player = Player((1500, 1600), [self.visible_sprites], self.obstacles_sprites)
+        for i in range(count_monsters):
+            if correct_position:
+                chosen_position = random.choice(correct_position)
+                x = chosen_position[0]
+                y = chosen_position[1]
+                Enemy(type_monsters, (x, y), [self.visible_sprites, self.negative_sprites], self.obstacles_sprites)
 
     def run(self):
         # обновение
         self.visible_sprites.custom_draw(self.player)
         self.visible_sprites.update()
-        self.player.update()
+        self.visible_sprites.enemy_update(self.player)
+        self.elapsed_time = get_elapsed_time(self.start_time)
+        if self.elapsed_time - self.old_elapsed_time >= 10:
+            self.old_elapsed_time = self.elapsed_time
+            if self.elapsed_time < 60:
+                self.update_monsters(10, "squid")
+            elif self.elapsed_time < 120:
+                self.update_monsters(12, "bat")
+            elif self.elapsed_time < 180:
+                self.update_monsters(15, "spider")
+            elif self.elapsed_time < 240:
+                self.update_monsters(19, "squid")
+            elif self.elapsed_time < 300:
+                self.update_monsters(22, "spider")
+            elif self.elapsed_time < 360:
+                self.update_monsters(15, "spider")
+            elif self.elapsed_time < 420:
+                self.update_monsters(17, "squid")
+            elif self.elapsed_time < 480:
+                self.update_monsters(19, "bat")
+            elif self.elapsed_time < 540:
+                self.update_monsters(20, "squid")
         if self.player.thunder:
             print("Thunder!")
             self.player.thunder = False
         if self.player.knife:
             print("Knife!")
             self.player.knife = False
+        self.player.update()
 
 
 class YSortCameraGroup(pygame.sprite.Group):
@@ -75,9 +116,21 @@ class YSortCameraGroup(pygame.sprite.Group):
         # рисование фона
         floor_offset_pos = self.floor_rect.topleft - self.offset
         self.display_surface.blit(self.floor_surf, floor_offset_pos)
-        # рисование всех спрайтов по центру относительно игрока
-        for sprite in sorted(self.sprites(), key=lambda x: x.rect.centery):
-            offset_pos = sprite.rect.topleft - self.offset
-            self.display_surface.blit(sprite.image, offset_pos)
-        self.ui.health_and_exp_bars(player)
 
+        # рисование всех спрайтов кроме игрока
+        for sprite in sorted(self.sprites(), key=lambda x: x.rect.centery):
+            if sprite != player:
+                offset_pos = sprite.rect.topleft - self.offset
+                self.display_surface.blit(sprite.image, offset_pos)
+
+        # рисование игрока
+        offset_pos = player.rect.topleft - self.offset
+        self.display_surface.blit(player.image, offset_pos)
+
+        self.ui.visual(player)
+
+    def enemy_update(self, player):
+        enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, "sprite_type")
+                         and sprite.sprite_type == "enemy"]
+        for enemy in enemy_sprites:
+            enemy.enemy_update(player)

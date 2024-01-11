@@ -1,13 +1,16 @@
 from utils import *
+import time
 import pygame
 
 
 class UI:
     def __init__(self, offset):
+        super().__init__()
         self.display_surface = pygame.display.get_surface()
         self.offset = offset
+        self.start_time = time.time()
 
-    def health_and_exp_bars(self, player):
+    def visual(self, player):
         # визуализация здоровья персонажа
         health_bar_rect = pygame.Rect(player.rect.x - self.offset.x, player.rect.y - self.offset.y + 32,
                                       border_health_width, border_health_height)
@@ -33,6 +36,11 @@ class UI:
         # отрисовка
         self.update(current_rect_health, background_health_rect, background_exp_bar_rect, current_rect_exp, player)
 
+    def format_time(self, elapsed_time):
+        minutes = int(elapsed_time // 60)
+        seconds = int(elapsed_time % 60)
+        return f"{minutes:02d}:{seconds:02d}"
+
     def update(self, health_rect, background_health, background_exp_rect, exp_rect, player):
         # отрисовка здоровья
         pygame.draw.rect(self.display_surface, color_border, background_health)
@@ -46,8 +54,17 @@ class UI:
         font_exp = pygame.font.Font(None, size_font_number_of_exp)
 
         # отображение уровня
-        exp_text = font_exp.render(str(player.exp_level), True, color_text)
+        exp_text = font_exp.render(str(player.exp_level), True, color_exp)
         self.display_surface.blit(exp_text, (background_exp_rect.x + 2, background_exp_rect.y + 1))
 
+        # время в игре
+        elapsed_time = get_elapsed_time(self.start_time)
+        formatted_time = self.format_time(elapsed_time)
 
-
+        font_timer = pygame.font.Font(None, size_font_timer)
+        timer_text = font_timer.render(formatted_time, True, color_timer)
+        self.display_surface.blit(timer_text, (10, 10))
+        # Проверка времени и отключение, если прошло 10 минут
+        if elapsed_time > 600:
+            print("победа!!!")
+            disconnect()
