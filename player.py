@@ -19,23 +19,26 @@ class Player(pygame.sprite.Sprite):
         self.type_walk = "down"
 
         # attacks
-        self.last_lightning_time = pygame.time.get_ticks()
         self.last_knife_time = pygame.time.get_ticks()
-        self.thunder = False
         self.knife = False
 
         # stats
-        self.stats = {"hp": 100, "speed": 2, "exp_level": 1, "money": 0, "exp_to_level_up": 10}
+        self.stats = {"hp": 100, "speed": 2, "exp_level": 1, "exp_to_level_up": 10}
         self.health = self.stats["hp"]
         self.speed = self.stats["speed"]
         self.exp_level = self.stats["exp_level"]
-        self.money = self.stats["money"]
-        self.exp_current_to_level_up = 8
+        self.next_level = self.stats["exp_to_level_up"]
+        self.exp_current_to_level_up = 0
 
+        # time
         self.start_time = time.time()
         self.elapsed_time = 0
 
+        # load animations
         self.load_images()
+
+        # mobs
+        self.mobs_death = 0
 
     def load_images(self):
         path = "graphics/player"
@@ -101,28 +104,25 @@ class Player(pygame.sprite.Sprite):
 
         for sprite in self.negative_sprites:
             if sprite.hitbox.colliderect(self.hitbox):
-                self.health -= 2
+                self.health -= 0.1
 
-    def cooldown_thunder(self):
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_lightning_time >= type_of_attacks["lightning"]["cooldown"]:
-            self.thunder = True
-            self.last_lightning_time = current_time
+    def death(self):
+        if self.health <= 0:
+            disconnect()
 
     def cooldown_knife(self):
         current_time = pygame.time.get_ticks()
-        if current_time - self.last_knife_time >= type_of_attacks["whip"]["cooldown"]:
+        if current_time - self.last_knife_time >= type_of_attacks["knife"]["cooldown"]:
             self.knife = True
             self.last_knife_time = current_time
 
-    def level_up(self):
-        pass
-
-    def change_upgrade_and_info(self):
-        pass
+    def update_level(self):
+        self.exp_current_to_level_up += 1
+        if self.exp_current_to_level_up >= self.next_level:
+            self.exp_level += 1
+            self.exp_current_to_level_up = 0
 
     def update(self):
-        self.cooldown_thunder()
         self.cooldown_knife()
         self.change_direction()
         self.change_image_walk()

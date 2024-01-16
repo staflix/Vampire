@@ -3,8 +3,9 @@ import pygame
 
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, enemy_name, pos, groups, obstacle_sprites):
+    def __init__(self, player, enemy_name, pos, groups, obstacle_sprites, negative_sprites):
         super().__init__(groups)
+        self.player = player
         self.animations = self.import_graphics(enemy_name)
         self.sprite_type = "enemy"
         self.frame_index = 1
@@ -14,10 +15,16 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(0, -10)
         self.obstacle_sprites = obstacle_sprites
+        self.negative_sprites = negative_sprites
         self.monster_name = enemy_name
         self.health = enemies[self.monster_name]["health"]
         self.speed = enemies[self.monster_name]["speed"]
         self.collide_damage = enemies[self.monster_name]["collide_damage"]
+        self.get_damage_knife = False
+        self.last_damage_time_knife = 0
+        self.last_fireball_damage_time = 0
+        self.get_damage_fireball = False
+        self.damage_sprite = pygame.sprite.Group()
 
     def import_graphics(self, name):
         animations = {"move": []}
@@ -62,6 +69,7 @@ class Enemy(pygame.sprite.Sprite):
                         self.hitbox.right = sprite.hitbox.left
                     elif self.direction.x < 0:  # moving left
                         self.hitbox.left = sprite.hitbox.right
+
         elif direction == "vertical":
             for sprite in self.obstacle_sprites:
                 if sprite.hitbox.colliderect(self.hitbox):
@@ -70,7 +78,25 @@ class Enemy(pygame.sprite.Sprite):
                     elif self.direction.y < 0:  # moving top
                         self.hitbox.top = sprite.hitbox.bottom
 
+    def receive_damage_knife(self, damage, cooldown=0.2):
+        current_time = pygame.time.get_ticks()
+        if not self.get_damage_knife and current_time >= self.last_damage_time_knife + cooldown * 1000:
+            self.health -= damage
+            if self.health > 0:
+                self.image = pygame.image.load(f'graphics/monsters/{self.monster_name}/5.png').convert_alpha()
+            else:
+                self.death()
+            self.get_damage_knife = True
+            self.last_damage_time_knife = current_time
+
+    def death(self):
+        self.kill()
+        self.player.update_level()
+        self.player.mobs_death += 1
+
     def enemy_update(self, player):
+        self.get_damage_knife = False
+        self.get_damage_fireball = False
         self.direction = self.get_player_distance_direction(player)
         self.animate()
         self.move(self.speed)

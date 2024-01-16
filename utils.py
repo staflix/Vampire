@@ -10,13 +10,13 @@ TILE_SIZE = 32
 FPS = 60
 
 # информация о оружиях
-type_of_attacks = {"lightning": {"cooldown": 2000, "damage": 30, "graphic": "graphics/lightning/lightning.png"},
-                   "whip": {"cooldown": 1200, "damage": 15, "graphic": ""}}
+type_of_attacks = {"fireball": {"cooldown": 1000, "damage": 15},
+                   "knife": {"cooldown": 2000, "damage": 15}}
 
 # информация о врагах
-enemies = {"bat": {"health": 50, "collide_damage": 1.5, "speed": 1.5},
-           "spider": {"health": 70, "collide_damage": 4, "speed": 1.7},
-           "squid": {"health": 120, "collide_damage": 8, "speed": 1.3}}
+enemies = {"bat": {"health": 10, "collide_damage": 1.5, "speed": 1.5},
+           "spider": {"health": 15, "collide_damage": 4, "speed": 1.7},
+           "squid": {"health": 20, "collide_damage": 8, "speed": 1.3}}
 
 # ui
 bar_health = 20

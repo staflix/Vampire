@@ -3,6 +3,7 @@ from player import Player
 from utils import *
 from ui import UI
 from enemy import Enemy
+from knife import Knife
 import random
 import time
 import pygame
@@ -14,6 +15,7 @@ class Level:
         self.visible_sprites = YSortCameraGroup()
         self.obstacles_sprites = pygame.sprite.Group()
         self.negative_sprites = pygame.sprite.Group()
+        self.count = 1
         # получение поверхности
         self.display_surface = pygame.display.get_surface()
         # объекты
@@ -58,7 +60,8 @@ class Level:
                 chosen_position = random.choice(correct_position)
                 x = chosen_position[0]
                 y = chosen_position[1]
-                Enemy(type_monsters, (x, y), [self.visible_sprites, self.negative_sprites], self.obstacles_sprites)
+                Enemy(self.player, type_monsters, (x, y), [self.visible_sprites, self.negative_sprites],
+                      self.obstacles_sprites, self.negative_sprites)
 
     def run(self):
         # обновение
@@ -86,12 +89,9 @@ class Level:
                 self.update_monsters(19, "bat")
             elif self.elapsed_time < 540:
                 self.update_monsters(20, "squid")
-        if self.player.thunder:
-            print("Thunder!")
-            self.player.thunder = False
         if self.player.knife:
-            print("Knife!")
-            self.player.knife = False
+            Knife(self.player, [self.visible_sprites], "knife", self.negative_sprites, self.player.exp_level)
+
         self.player.update()
 
 

@@ -1,15 +1,16 @@
 from utils import *
+from background import Background
 import pygame
 
 
 class Menu:
     def __init__(self, screen):
         self.screen = screen
-        self.buttons = {"НАЧАТЬ": ((540, 500, 200, 45), (3, 102, 173), (0, 149, 255)),
-                        "ВЫЙТИ": ((540, 550, 200, 45), (180, 0, 0), (255, 0, 0)),
-                        "УСИЛЕНИЯ": ((540, 600, 200, 45), (3, 102, 173), (0, 149, 255))}
+        self.buttons = {"НАЧАТЬ": ((540, 550, 200, 45), (3, 102, 173), (0, 149, 255)),
+                        "ВЫЙТИ": ((540, 600, 200, 45), (180, 0, 0), (255, 0, 0))}
         self.clock = pygame.time.Clock()
         self.sprite_buttons = pygame.sprite.Group()
+        self.image = Background()
 
     def run(self):
         flag_click = False
@@ -33,6 +34,7 @@ class Menu:
 
     def create_buttons(self):
         self.sprite_buttons.empty()
+        self.image.add(self.sprite_buttons)
         for text, info in self.buttons.items():
             button = Button(text, info[0], info[1], info[2])
             button.add(self.sprite_buttons)
