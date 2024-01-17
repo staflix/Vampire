@@ -4,6 +4,7 @@ from level import Level
 import pygame
 
 
+# основной цикл игры
 class Game:
     def __init__(self):
         pygame.init()

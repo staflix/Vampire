@@ -11,27 +11,30 @@ import pygame
 
 class Level:
     def __init__(self):
-        # создание видимых, препятственных, злых спрайтов
+        # Создание групп спрайтов для видимых, препятственных и враждебных объектов
         self.visible_sprites = YSortCameraGroup()
         self.obstacles_sprites = pygame.sprite.Group()
         self.negative_sprites = pygame.sprite.Group()
-        self.count = 1
-        # получение поверхности
-        self.display_surface = pygame.display.get_surface()
-        # объекты
+        self.count = 1  # Неясно, для чего используется эта переменная
+        self.display_surface = pygame.display.get_surface()  # Получаем поверхность отображения из Pygame
+
+        # Определение структур данных для хранения карты и изображений
         self.layouts = {
             "obstacles": import_csv_file("graphics/csvfiles/pygame_obstacles.csv")
         }
         self.pictures = {
             "obstacles": import_folder("graphics/obstacles"),
         }
-        # отрисовка карты
+
+        # Вызываем метод create_map для создания карты игры
         self.create_map()
-        # начало отсчета времени
+
+        # Инициализация переменных, связанных со временем
         self.start_time = time.time()
         self.elapsed_time = 0
         self.old_elapsed_time = -8
 
+    # Метод для создания карты игры на основе данных макета
     def create_map(self):
         for style, layout in self.layouts.items():
             for index_r, r in enumerate(layout):
@@ -44,9 +47,11 @@ class Level:
                             Tile((x, y), [self.visible_sprites, self.obstacles_sprites], obj)
         self.player = Player((1500, 1600), [self.visible_sprites], self.obstacles_sprites, self.negative_sprites)
 
+    # Метод для обновления монстров в зависимости от прошедшего времени
     def update_monsters(self, count_monsters, type_monsters):
         correct_position = []
 
+        # Определение правильных позиций для размещения монстров
         for style, layout in self.layouts.items():
             for index_r, r in enumerate(layout):
                 for index_c, c in enumerate(r):
@@ -55,6 +60,7 @@ class Level:
                         y = index_r * TILE_SIZE
                         correct_position.append((x, y))
 
+        # Генерация и размещение монстров на правильных позициях
         for i in range(count_monsters):
             if correct_position:
                 chosen_position = random.choice(correct_position)
@@ -62,6 +68,8 @@ class Level:
                 y = chosen_position[1]
                 Enemy(self.player, type_monsters, (x, y), [self.visible_sprites, self.negative_sprites],
                       self.obstacles_sprites, self.negative_sprites)
+
+    # Основной игровой цикл
 
     def run(self):
         # обновение

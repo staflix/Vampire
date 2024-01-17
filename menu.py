@@ -5,6 +5,7 @@ import pygame
 
 class Menu:
     def __init__(self, screen):
+        # Инициализация экрана, кнопок и часов
         self.screen = screen
         self.buttons = {"НАЧАТЬ": ((540, 550, 200, 45), (3, 102, 173), (0, 149, 255)),
                         "ВЫЙТИ": ((540, 600, 200, 45), (180, 0, 0), (255, 0, 0))}
@@ -15,6 +16,7 @@ class Menu:
     def run(self):
         flag_click = False
         while True:
+            # Обработка событий в цикле
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     disconnect()
@@ -25,6 +27,8 @@ class Menu:
                     if name_click_btn == "ОТМЕНА":
                         disconnect()
                     return name_click_btn
+
+            # Обновление экрана
             self.screen.fill('black')
             self.create_buttons()
             self.sprite_buttons.update()
@@ -33,6 +37,7 @@ class Menu:
             self.clock.tick(FPS)
 
     def create_buttons(self):
+        # Создание кнопок и добавление их в группу спрайтов
         self.sprite_buttons.empty()
         self.image.add(self.sprite_buttons)
         for text, info in self.buttons.items():
@@ -40,6 +45,7 @@ class Menu:
             button.add(self.sprite_buttons)
 
     def click_check(self, pos):
+        # Проверка, на какую кнопку было произведено нажатие
         for button in self.sprite_buttons:
             if isinstance(button, Button) and button.rect.collidepoint(pos):
                 return button.name
@@ -48,6 +54,7 @@ class Menu:
 class Button(pygame.sprite.Sprite):
     def __init__(self, text, pos, color, hover_color):
         super().__init__()
+        # Инициализация кнопки
         self.font = pygame.font.SysFont("", 36)
         self.name = text
         self.text_image = self.font.render(text, True, (255, 255, 255))
@@ -61,11 +68,13 @@ class Button(pygame.sprite.Sprite):
         self.is_hovered = False
 
     def update(self):
+        # Обновление состояния кнопки
         mouse_pos = pygame.mouse.get_pos()
         self.is_hovered = self.rect.collidepoint(mouse_pos)
         self.draw()
 
     def draw(self):
+        # Отрисовка кнопки в зависимости от состояния
         if self.is_hovered:
             pygame.draw.rect(self.image, self.hover_color, (0, 0, self.width, self.height), border_radius=10)
         else:

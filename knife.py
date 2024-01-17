@@ -7,22 +7,25 @@ class Knife(pygame.sprite.Sprite):
         super().__init__(groups)
         self.player = player
         self.weapon_name = weapon_name
-        self.frame_index = 1  # Start with frame 0
+        self.frame_index = 1
         self.negative_sprites = negative_sprites
         self.image = pygame.image.load("graphics/knife/1.png")
         self.rect = self.image.get_rect(midleft=player.rect.midright)
         self.damage = type_of_attacks["knife"]["damage"] + exp_level * 2
         self.start_time = time.time()
 
+    # Метод для анимации ножа
     def animate(self):
         if time.time() - self.start_time >= 0.1:
             self.player.knife = False
 
+    # Метод для обработки столкновений ножа с вражескими объектами
     def collision(self):
         for sprite in self.negative_sprites:
             if self.rect.colliderect(sprite.rect):
                 sprite.receive_damage_knife(self.damage)
 
+    # Метод для обновления состояния ножа
     def update(self):
         if self.player.knife:
             self.rect = self.image.get_rect(midleft=self.player.rect.midright)

@@ -1,6 +1,7 @@
 import pygame
 
 
+# экран победы
 class Win:
     def __init__(self, mobs_death):
         self.mobs_death = mobs_death

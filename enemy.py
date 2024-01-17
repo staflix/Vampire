@@ -4,22 +4,29 @@ import pygame
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, player, enemy_name, pos, groups, obstacle_sprites, negative_sprites):
+        # Вызов конструктора родительского класса
         super().__init__(groups)
+
+        # Инициализация параметров врага
         self.player = player
-        self.animations = self.import_graphics(enemy_name)
+        self.animations = self.import_graphics(enemy_name)  # Загрузка анимаций врага
         self.sprite_type = "enemy"
         self.frame_index = 1
         self.animation_time = 0.15
         self.direction = pygame.math.Vector2()
-        self.image = self.animations["move"][str(self.frame_index)]
+        self.image = self.animations["move"][str(self.frame_index)]  # Установка изображения врага
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(0, -10)
         self.obstacle_sprites = obstacle_sprites
         self.negative_sprites = negative_sprites
         self.monster_name = enemy_name
+
+        # Характеристики врага
         self.health = enemies[self.monster_name]["health"]
         self.speed = enemies[self.monster_name]["speed"]
         self.collide_damage = enemies[self.monster_name]["collide_damage"]
+
+        # Оружие врага
         self.get_damage_knife = False
         self.last_damage_time_knife = 0
         self.last_fireball_damage_time = 0
@@ -27,6 +34,7 @@ class Enemy(pygame.sprite.Sprite):
         self.damage_sprite = pygame.sprite.Group()
 
     def import_graphics(self, name):
+        # Загрузка анимаций врага из соответствующей папки
         animations = {"move": []}
         main_path = f'graphics/monsters/{name}/'
         for animation in animations.keys():
@@ -34,6 +42,7 @@ class Enemy(pygame.sprite.Sprite):
         return animations
 
     def get_player_distance_direction(self, player):
+        # Получение направления на игрока от врага
         enemy_vec = pygame.math.Vector2(self.rect.center)
         player_vec = pygame.math.Vector2(player.rect.center)
         distance = (player_vec - enemy_vec).magnitude()
@@ -45,6 +54,7 @@ class Enemy(pygame.sprite.Sprite):
         return direction
 
     def animate(self):
+        # Анимация врага
         animation = self.animations["move"]
         self.frame_index += self.animation_time
         if self.frame_index >= len(animation):
@@ -53,6 +63,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.hitbox.center)
 
     def move(self, speed):
+        # Движение врага
         if self.direction.magnitude() != 0:
             self.direction = self.direction.normalize()
         self.hitbox.x += self.direction.x * speed
@@ -62,23 +73,25 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.center = self.hitbox.center
 
     def collision(self, direction):
+        # Обработка столкновений врага с препятствиями
         if direction == "horizontal":
             for sprite in self.obstacle_sprites:
                 if sprite.hitbox.colliderect(self.hitbox):
-                    if self.direction.x > 0:  # moving right
+                    if self.direction.x > 0:  # Движение вправо
                         self.hitbox.right = sprite.hitbox.left
-                    elif self.direction.x < 0:  # moving left
+                    elif self.direction.x < 0:  # Движение влево
                         self.hitbox.left = sprite.hitbox.right
 
         elif direction == "vertical":
             for sprite in self.obstacle_sprites:
                 if sprite.hitbox.colliderect(self.hitbox):
-                    if self.direction.y > 0:  # moving down
+                    if self.direction.y > 0:  # Движение вниз
                         self.hitbox.bottom = sprite.hitbox.top
-                    elif self.direction.y < 0:  # moving top
+                    elif self.direction.y < 0:  # Движение вверх
                         self.hitbox.top = sprite.hitbox.bottom
 
     def receive_damage_knife(self, damage, cooldown=0.2):
+        # Получение урона от игрока при атаке ножом
         current_time = pygame.time.get_ticks()
         if not self.get_damage_knife and current_time >= self.last_damage_time_knife + cooldown * 1000:
             self.health -= damage
@@ -90,11 +103,13 @@ class Enemy(pygame.sprite.Sprite):
             self.last_damage_time_knife = current_time
 
     def death(self):
+        # Обработка смерти врага
         self.kill()
         self.player.update_level()
         self.player.mobs_death += 1
 
     def enemy_update(self, player):
+        # Обновление состояния врага
         self.get_damage_knife = False
         self.get_damage_fireball = False
         self.direction = self.get_player_distance_direction(player)

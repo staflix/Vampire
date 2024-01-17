@@ -66,8 +66,8 @@ class UI:
         timer_text = font_timer.render(formatted_time, True, color_timer)
         self.display_surface.blit(timer_text, (10, 10))
         # Проверка времени и отключение, если прошло 10 минут
-        if elapsed_time > 10:
+        if elapsed_time > 600:
             player.win_lose = True
             Win(player.mobs_death)
-        elif elapsed_time > 20:
+        elif elapsed_time > 605:
             disconnect()
